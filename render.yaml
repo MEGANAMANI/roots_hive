@@ -1,0 +1,69 @@
+# HIVE Roots — Render Blueprint (local only — do not commit)
+# Usage: Render Dashboard → Blueprint → New Blueprint Instance → paste or upload this file
+# Repo: monorepo with backend/ (Express API) + frontend/ (Vite React)
+
+databases:
+  - name: hive-roots-db
+    databaseName: hive_roots
+    user: hive_roots
+    plan: free
+
+services:
+  # ── Backend API ─────────────────────────────────────────────────────────────
+  - type: web
+    name: hive-roots-api
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hive-roots-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: DEV_SHOW_OTP
+        value: "false"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+      - key: MICROSOFT_DEV_LOGIN
+        value: "false"
+      - key: MICROSOFT_CLIENT_ID
+        sync: false
+      - key: MICROSOFT_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_TENANT_ID
+        sync: false
+      - key: MICROSOFT_CALLBACK_URL
+        sync: false
+
+  # ── Frontend (Static Site) ────────────────────────────────────────────────
+  - type: web
+    name: hive-roots-web
+    runtime: static
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
