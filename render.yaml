@@ -1,6 +1,15 @@
-# HIVE Roots — Render Blueprint (local only — do not commit)
-# Usage: Render Dashboard → Blueprint → New Blueprint Instance → paste or upload this file
-# Repo: monorepo with backend/ (Express API) + frontend/ (Vite React)
+# HIVE Roots — Render Blueprint
+# Deploy: Render Dashboard → Blueprints → New Blueprint Instance → connect this repo
+# Creates: Postgres + backend API (Node/Express) + frontend (Vite static site)
+#
+# After first deploy, set these manually in the Render dashboard:
+#   hive-roots-api  → CORS_ORIGIN, FRONTEND_URL (your static site URL)
+#   hive-roots-web  → VITE_API_URL = https://<api-host>/api
+# Then redeploy the frontend so Vite picks up VITE_API_URL at build time.
+#
+# DB setup (one time, Render Shell on hive-roots-api):
+#   psql $DATABASE_URL -f ../database/schema.sql
+#   npm run seed
 
 databases:
   - name: hive-roots-db
@@ -9,7 +18,7 @@ databases:
     plan: free
 
 services:
-  # ── Backend API ─────────────────────────────────────────────────────────────
+  # ── Backend API (Express + PostgreSQL) ────────────────────────────────────
   - type: web
     name: hive-roots-api
     runtime: node
@@ -51,12 +60,10 @@ services:
       - key: MICROSOFT_CALLBACK_URL
         sync: false
 
-  # ── Frontend (Static Site) ────────────────────────────────────────────────
+  # ── Frontend (Vite React static site) ─────────────────────────────────────
   - type: web
     name: hive-roots-web
     runtime: static
-    region: singapore
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
